@@ -1,0 +1,26 @@
+Deskriptorù jsem se rozhodla využít kvùli opakujícím se vzorùm v jednotlivých obrazech. Pøi identifikaci jednotlivých prvkù v obraze a dále rozhodováním, co která obrazovka znamená. 
+Na obrazovkách se nachází prvky, které se opakují. Každá obrazovka má svùj význam nebo funkci. 
+
+
+SIFT - Scale Invariant Feature Transform 
+affini transformace - citace Jan- Medical...
+- pøíznaky se srovnávají s velkou databází již vypoèítaných pøíznakù.Pøíznaky jsou jedineèné v tom smyslu, že se správnì  a s vysokou pravdìpodobností pøiøadí již vypoèítanými pøíznaky obrázkù v databázi. Toto srovnávání se provádí výpoètem nejbližšího souseda, následovaný Houghovou transformací k identifikaci klastrù, které patøí k jednomu objektu a nakonec verifikací pomocí metody nejmenších ètvercù kvùli konzistenci pozièních parametrù. Tento pøístup k rozpoznávání objektù je robustní a dosahuje rychlosti blížící se zpracování v reálném èase. Pøíznaky se nachází jak v místní, tak ve frekvenèní doménì, tím se dosahuje robustnosti pøi velkém poètu objektù v obraze a pokud objekty zastiòuje pøekážka. Extrahování pøíznakù je nároèné na výpoèet, proto se provádí kaskádové filtrování a ty nejnároènìjší operace jsou poèítány jen v regionech, které projdou inicializaèním testem. Generování pøíznakù probíhá v nìkolika fázích:
+1) Detekce místních extrémù
+2) Lokalizace bodù zájmu - vybírají se na základì stability a je urèena lokace a mìøítko
+3) Pøiøazení orientace - Na základì místního gradientu se pøiøadí orientace. 
+4) Deskriptor bodu zájmu - Kolem bodù zájmu je zmìøen gradient v urèeném mìøítku a dále je tranformovaný do reprezentace, která je invariantní vùèi geometrické distorzi a zmìnì osvìtlení
+
+To znamená, že transformuje data obrazu do souøadnic, které jsou invariantní vùèi mìøítku a souvisí s lokálními pøíznaky. Tento pøístup generuje mnoho pøíznakù, které hustì pokrývají obraz pøes velkou øadu mìøítek a lokací. 
+Pro pøiøazování obrazù se vypoèítají vektor pøíznakù všech obrazù v databázi a pak se vypoèítá Euklidovská vzdálenost k pøiøazovanému obrazu pro každý z nich. K identifikaci správné a falešné shody se využívá hashovací tabulky Houghovy transformace. Každý klastr tøí nebo více pøíznakù, které náleží jednomu objektu a pozici se pak dále verifikuje. Dále se vyhodnocuje chyba a odlehlé hodnoty se neberou v potaz. Nakonec se vypoèítá pravdìpobnost shody a pravdìpodobnost falešnì pozitivního výsledku. 
+
+Detekce místních extrémù
+ - nejdøíve se vypoèítá konvoluce originálního obrazu s 2D Gaussovskou funkcí a tím vznikne mìøítkový prostor pùvodního obrazu
+- dále se vypoèítá rozdíl dvou Gaussových funkcí s rùzným mìøítkem k.
+( - velmi efektivní, protože se obrázek rozmaže dvìma rùznými gaussovými funkcemi a pak se jen obrazy odeètou.)
+ - tento postup se provádí pro nìkolik rùzných mìøítek, pak se obraz podvzorkuje  a opakuje se stejný postup
+( - rozdíl tìchto gaussových funkcí je blízkou aproximací Laplacian of Gaussian (LoG), akorát se pak musí normalizovat pomocí sigma^2 aby byl invariantní vùèi zvìtšení. Maxima a minima LoG produkují nejstabilnìjší pøíznaky.)
+obr. na str 7 nahoøe
+ - dále se srovnává každý pixel s okolím 3x3x3 tzn. s 26 sousedícími pixely. Maximum resp. minimum je deketováno, pokud má porovnávaný pixel nejvyšší hodnotu resp. nejnižší hodnotu v daném okolí.  
+ - tyto maxima a minima se dále selektují pomocí funkce (str. 11 dole), kde se poèítá kontrast v bodì a málo kontrastní body se vyøazují. 
+ - pro zvýšení stability se vyøazují i body, které pochází z hran, protože jsou nestabilní vùèi šumu. Takovéto body se vyznaèují charakteristickým zakøivením, kdy mají vysoké zakøivení kolmo na hranu a podél hrany výraznì nižší.
+Nejprve se vypoèítá determinant a stopa 2x2 Hessiánu, která odpovídá pozici a mìøítku bodu zájmu. Derivace jsou aproximovány rozdílem sousedících bodù a bodu zájmu. Pomocí vzorce  
